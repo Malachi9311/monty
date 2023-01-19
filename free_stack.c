@@ -1,17 +1,17 @@
 #include "monty.h"
-/**
-* free_stack - frees a doubly linked list
-* @head: head of the stack
-*/
-void free_stack(stack_t *head)
-{
-	stack_t *aux;
 
-	aux = head;
-	while (head)
+/**
+ * free_stack - function to free all elements in the stack
+ * @stack: input pointer to head of the stack
+ */
+void free_stack(stack_t *stack)
+{
+	stack_t *temp;
+
+	while (stack != NULL)
 	{
-		aux = head->next;
-		free(head);
-		head = aux;
+		temp = stack;
+		stack = stack->next;
+		free(temp);
 	}
 }

@@ -1,12 +1,16 @@
 #ifndef MONTY_H
 #define MONTY_H
+
+/* INCLUDED LIBRARIES */
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
+#include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <string.h>
-#include <ctype.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+/* STRUCTS AND DEFINITIONS */
 /**
  * struct stack_s - doubly linked list representation of a stack (or queue)
  * @n: integer
@@ -22,22 +26,7 @@ typedef struct stack_s
 	struct stack_s *prev;
 	struct stack_s *next;
 } stack_t;
-/**
- * struct bus_s - variables -args, file, line content
- * @arg: value
- * @file: pointer to monty file
- * @content: line content
- * @lifi: flag change stack <-> queue
- * Description: carries values through the program
- */
-typedef struct bus_s
-{
-	char *arg;
-	FILE *file;
-	char *content;
-	int lifi;
-}  bus_t;
-extern bus_t bus;
+
 /**
  * struct instruction_s - opcode and its function
  * @opcode: the opcode
@@ -51,28 +40,92 @@ typedef struct instruction_s
 	char *opcode;
 	void (*f)(stack_t **stack, unsigned int line_number);
 } instruction_t;
-char *_realloc(char *ptr, unsigned int old_size, unsigned int new_size);
-ssize_t getstdin(char **lineptr, int file);
-char  *clean_line(char *content);
-void f_push(stack_t **head, unsigned int number);
-void f_pall(stack_t **head, unsigned int number);
-void f_pint(stack_t **head, unsigned int number);
-int execute(char *content, stack_t **head, unsigned int counter, FILE *file);
-void free_stack(stack_t *head);
-void f_pop(stack_t **head, unsigned int counter);
-void f_swap(stack_t **head, unsigned int counter);
-void f_add(stack_t **head, unsigned int counter);
-void f_nop(stack_t **head, unsigned int counter);
-void f_sub(stack_t **head, unsigned int counter);
-void f_div(stack_t **head, unsigned int counter);
-void f_mul(stack_t **head, unsigned int counter);
-void f_mod(stack_t **head, unsigned int counter);
-void f_pchar(stack_t **head, unsigned int counter);
-void f_pstr(stack_t **head, unsigned int counter);
-void f_rotl(stack_t **head, unsigned int counter);
-void f_rotr(stack_t **head, __attribute__((unused)) unsigned int counter);
-void addnode(stack_t **head, int n);
-void addqueue(stack_t **head, int n);
-void f_queue(stack_t **head, unsigned int counter);
-void f_stack(stack_t **head, unsigned int counter);
-#endif
+
+/**
+ * struct variable_s - opcode string and file pointer fd
+ * @opcode: the opcode string
+ * @fd: file pointer
+ *
+ * Description: struct to hold opcode and file pointer
+ * as global variable to be able to free all variables
+ */
+typedef struct variable_s
+{
+	char *opcode;
+	FILE *fd;
+} variable_t;
+
+/* FUNCTION PROTOTYPES AND GLOBAL VARIABLE*/
+extern variable_t global;
+
+/* function to check initial conditions and open the file */
+FILE *opening_func(int argc, char *argv[]);
+
+/* function to parse first opcode and needed arguments from line read */
+char *getopcode(char **str);
+
+/* function to add node to stack (push opcode) */
+stack_t *addnode(char *opcode, stack_t **stack, unsigned int line_number);
+
+/* function to match opcode to specific function */
+stack_t *findinstruction(char *opcode, stack_t **stack,
+			 unsigned int line_number);
+
+/* function to print all elements of the stack */
+void pall_func(stack_t **stack, unsigned int line_number);
+
+/* function to print integer at top of stack */
+void pint_func(stack_t **stack, unsigned int line_number);
+
+/* function to swap the top two integers on the stack */
+void swap_func(stack_t **stack, unsigned int line_number);
+
+/* function to add the top two integers on the stack & replace the top value*/
+void add_func(stack_t **stack, unsigned int line_number);
+
+/* function to delete top of stack */
+void pop_func(stack_t **stack, unsigned int line_number);
+
+/* function to subtract top two integers on the stack & replace the top value*/
+void sub_func(stack_t **stack, unsigned int line_number);
+
+/* function to multiply top two integers on the stack & replace the top value*/
+void mul_func(stack_t **stack, unsigned int line_number);
+
+/* function to divide top two integers on the stack & replace the top value*/
+void div_func(stack_t **stack, unsigned int line_number);
+
+/* function to modulo top two integers on the stack & replace the top value*/
+void mod_func(stack_t **stack, unsigned int line_number);
+
+/* function to print top of stack as ascii character */
+void pchar_func(stack_t **stack, unsigned int line_number);
+
+/* function to print stack as string */
+void pstr_func(stack_t **stack, unsigned int line_number);
+
+/* function to rotate stack so the top element becomes the last */
+void rotl_func(stack_t **stack, unsigned int line_number);
+
+/* function to rotate stack so the last element becomes the top */
+void rotr_func(stack_t **stack, unsigned int line_number);
+
+/* function to catch empty lines or newlines from invalid command */
+void nop_func(stack_t **stack, unsigned int line_number);
+
+/* function to free all elements of stack */
+void free_stack(stack_t *stack);
+
+/* function to print error message, free everything, & exit if push arg fails*/
+void free_for_exit_push(unsigned int line_number, stack_t *stack);
+
+/* function to print error message, free everything, & exit if malloc fails */
+void free_for_exit_malloc(stack_t *stack);
+
+/* function to print free everything & exit for general error */
+void free_for_exit_error(stack_t *stack);
+
+/* function to check if char is digit */
+int _isdigit(int c);
+
+#endif /* MONTY_H */
